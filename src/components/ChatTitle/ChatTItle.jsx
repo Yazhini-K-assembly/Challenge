@@ -2,9 +2,8 @@ import React from 'react';
 import Trash from '../../images/icons/trash-logo.svg';
 
 const ChatTitle = ({ selectedConversation }) => {
-    // Check if selectedConversation is valid before accessing its properties
     if (!selectedConversation) {
-        return null; // or render a placeholder message if you prefer
+        return null; 
     }
 
     return (

@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { ConversationsContext } from '../../App';
+import React, { useContext } from 'react';
+import { ConversationsContext } from '../../reducers/ConversationsContext';
 import { faker } from '@faker-js/faker';
 
 import ConversationSearch from '../../components/conversation/conversationSearch/ConversationSearch';
@@ -15,48 +15,38 @@ const ChatShell = () => {
     const handleConversationChange = (conversationId) => {
         dispatch({ type: 'SELECTED_CONVERSATION_CHANGED', conversationId });
 
-        // Generate fake messages for the selected conversation
-        const messages = generateConversation(conversationId);
+        // Generate messages for the selected conversation
+        const messages = generateMessagesForConversation(conversationId);
 
         dispatch({ type: 'MESSAGES_LOADED', conversationId, messages });
     };
 
-    const generateConversation = (conversationId) => {
-        const person1Name = "Yazhini K"; 
+    const generateMessagesForConversation = (conversationId) => {
         const selectedConversation = state.conversations.find(
             (conversation) => conversation.id === conversationId
         );
-        
-        // Ensure there's a valid selected conversation
-        const person2Name = selectedConversation ? selectedConversation.title : faker.person.fullName();
-    
+
+        const person2Name = selectedConversation.title;
+
         let conversation = [];
-    
-        // Create a conversation with 6 messages (alternating between two people)
-        for (let i = 0; i < 6; i++) {
-            const senderName = i % 2 === 0 ? person1Name : person2Name;
-            const recipientName = i % 2 === 0 ? person2Name : person1Name;
-    
-            const messageText = generateMeaningfulMessage(senderName, recipientName);
+
+        for (let i = 0; i < 10; i++) {
+
+            const recipientName = person2Name;
+
+            const messageText = `${faker.lorem.sentence()} ${faker.lorem.sentence()}`;
             const message = {
-                imageUrl: selectedConversation.imageUrl,  
-                imageAlt: senderName,
+                imageUrl: selectedConversation.imageUrl,
+                imageAlt: recipientName,
                 messageText: messageText,
                 createdAt: faker.date.recent().toLocaleString(),
-                isMyMessage: i % 2 === 0, // alternate sender
+                isMyMessage: i % 2 === 0,
             };
-    
+
             conversation.push(message);
         }
-    
-        return conversation;
-    };
-    
 
-    // Function to generate a sentence 
-    const generateMeaningfulMessage = (senderName, recipientName) => {
-        const message = `${senderName}: Hey ${recipientName}, ${faker.lorem.sentence()} ${faker.lorem.sentence()}`;
-        return message;
+        return conversation;
     };
 
     return (
@@ -67,15 +57,13 @@ const ChatShell = () => {
                     'search-container chat-title'
                     'conversation-list chat-message-list'
                     'new-message-container chat-form'
-                `
+                `,
             }}
         >
-            {/* Search Container */}
             <div className="row-start-1 col-start-1 area-[search-container]">
                 <ConversationSearch />
             </div>
 
-            {/* Conversation List */}
             <div className="row-start-2 col-start-1 area-[conversation-list] overflow-y-auto">
                 <ConversationList
                     onConversationItemSelected={handleConversationChange}
@@ -84,22 +72,18 @@ const ChatShell = () => {
                 />
             </div>
 
-            {/* New Conversation */}
             <div className="row-start-3 col-start-1 area-[new-message-container]">
                 <NewConversation />
             </div>
 
-            {/* Chat Title */}
             <div className="row-start-1 col-start-2 area-[chat-title]">
                 <ChatTitle selectedConversation={state.selectedConversation} />
             </div>
 
-            {/* Message List */}
             <div className="row-start-2 col-start-2 area-[chat-message-list] overflow-y-auto">
                 <MessageList messages={state.selectedConversation?.messages || []} />
             </div>
 
-            {/* Chat Form */}
             <div className="row-start-3 col-start-2 area-[chat-form]">
                 <ChatForm />
             </div>

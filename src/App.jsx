@@ -1,16 +1,12 @@
-import React, { useReducer } from 'react';
+import React from 'react';
 import ChatShell from './container/shell/ChatShell';
-import { initialState, conversationsReducer } from './reducers/ConversationsContext';
-
-export const ConversationsContext = React.createContext();
+import { ConversationsProvider } from './reducers/ConversationsContext';
 
 const App = () => {
-    const [state, dispatch] = useReducer(conversationsReducer, initialState);
-
     return (
-        <ConversationsContext.Provider value={{ state, dispatch }}>
+        <ConversationsProvider>
             <ChatShell />
-        </ConversationsContext.Provider>
+        </ConversationsProvider>
     );
 };
 

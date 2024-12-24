@@ -2,17 +2,9 @@ import React, { createContext, useReducer, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
 
 // Function to generate conversations
-const generateConversations = () => {
+const initializeConversations = () => {
     console.log('Generating new conversations data using faker-js...');
-    return Array.from({ length: 9 }, (_, index) => ({
-        id: String(index + 1),
-        imageUrl: faker.image.avatar(),
-        imageAlt: faker.person.fullName(),
-        title: faker.person.fullName(),
-        createdAt: '',
-        latestMessageText: '',
-        messages: [],
-    }));
+    return [];
 };
 
 // Callback to initialize state
@@ -21,22 +13,41 @@ const initialStateCallback = () => {
     const savedState = localStorage.getItem('conversationsState');
 
     if (savedState) {
-        console.log('Restoring conversations data from local storage...');
+        console.log('Restoring conversations data...');
         return JSON.parse(savedState);
     } else {
         console.log('No data found in local storage.');
         return {
-            conversations: generateConversations(),
+            conversations: initializeConversations(),
             selectedConversation: null,
         };
     }
 };
 
-// Define initial state for export
 export const initialState = initialStateCallback();
 
+// Reducer function
 export const conversationsReducer = (state, action) => {
     switch (action.type) {
+        case 'ADD_CONVERSATION': {
+            const newConversation = {
+                id: String(state.conversations.length + 1),
+                imageUrl: faker.image.avatar(),
+                imageAlt: action.recipientName,
+                title: action.recipientName,
+                createdAt: new Date().toLocaleString(),
+                latestMessageText: '',
+                messages: [],
+            };
+
+            const updatedConversations = [...state.conversations, newConversation];
+
+            return {
+                ...state,
+                conversations: updatedConversations,
+            };
+        }
+
         case 'SELECTED_CONVERSATION_CHANGED': {
             const selectedConversation = state.conversations.find(
                 (conversation) => conversation.id === action.conversationId
@@ -48,17 +59,14 @@ export const conversationsReducer = (state, action) => {
                 selectedConversation,
             };
         }
+
         case 'MESSAGES_LOADED': {
             console.log(`Messages loaded for conversation ID: ${action.conversationId}`);
             const updatedConversations = state.conversations.map((conversation) => {
                 if (conversation.id === action.conversationId) {
                     const latestMessage = action.messages[action.messages.length - 1];
                     const formattedDate = latestMessage
-                        ? new Date(latestMessage.createdAt).toLocaleString('en-IN', {
-                              month: 'short',
-                              day: 'numeric',
-                              timeZone: 'Asia/Kolkata',
-                          })
+                        ? new Date(latestMessage.createdAt).toLocaleString()
                         : conversation.createdAt;
 
                     return {
@@ -79,13 +87,13 @@ export const conversationsReducer = (state, action) => {
                 ),
             };
         }
+
         default:
             console.warn(`Unhandled action type: ${action.type}`);
             return state;
     }
 };
 
-// Define and export context and provider
 export const ConversationsContext = createContext();
 
 export const ConversationsProvider = ({ children }) => {

@@ -8,7 +8,7 @@ function ChatForm() {
             <input 
                 type="text" 
                 placeholder="type a message" 
-                className="outline-none p-4 border-2 border-gray-300 text-gray-800 rounded-lg text-lg w-full"
+                className="outline-none p-3 border-2 border-gray-300 text-gray-800 rounded-lg text-md w-full"
             />
         </div>
     );
