@@ -53,7 +53,6 @@ export const conversationsReducer = (state, action) => {
                 (conversation) => conversation.id === action.conversationId
             );
 
-            console.log(`Selected conversation changed: ${action.conversationId}`);
             return {
                 ...state,
                 selectedConversation,
@@ -68,6 +67,9 @@ export const conversationsReducer = (state, action) => {
                     const formattedDate = latestMessage
                         ? new Date(latestMessage.createdAt).toLocaleString()
                         : conversation.createdAt;
+
+                    // Save messages to local storage
+                    localStorage.setItem(`messages_${action.conversationId}`, JSON.stringify(action.messages));
 
                     return {
                         ...conversation,
@@ -85,6 +87,26 @@ export const conversationsReducer = (state, action) => {
                 selectedConversation: updatedConversations.find(
                     (conversation) => conversation.id === action.conversationId
                 ),
+            };
+        }
+
+        case 'DELETE_CONVERSATION': {
+            // Remove messages from local storage
+            localStorage.removeItem(`messages_${action.conversationId}`);
+
+            const updatedConversations = state.conversations.filter(
+                (conversation) => conversation.id !== action.conversationId
+            );
+
+            const updatedSelectedConversation =
+                state.selectedConversation?.id === action.conversationId
+                    ? null
+                    : state.selectedConversation;
+
+            return {
+                ...state,
+                conversations: updatedConversations,
+                selectedConversation: updatedSelectedConversation,
             };
         }
 

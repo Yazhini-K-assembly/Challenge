@@ -13,40 +13,37 @@ const ChatShell = () => {
     const { state, dispatch } = useContext(ConversationsContext);
 
     const handleConversationChange = (conversationId) => {
-        dispatch({ type: 'SELECTED_CONVERSATION_CHANGED', conversationId });
-
-        // Generate messages for the selected conversation
-        const messages = generateMessagesForConversation(conversationId);
-
-        dispatch({ type: 'MESSAGES_LOADED', conversationId, messages });
-    };
-
-    const generateMessagesForConversation = (conversationId) => {
         const selectedConversation = state.conversations.find(
             (conversation) => conversation.id === conversationId
         );
 
-        const person2Name = selectedConversation.title;
+        let messages = JSON.parse(
+            localStorage.getItem(`messages_${conversationId}`)
+        );
 
-        let conversation = [];
+        if (!messages) {
+            // Generate messages if they are not found in local storage
+            messages = generateMessagesForConversation(selectedConversation);
+            localStorage.setItem(`messages_${conversationId}`, JSON.stringify(messages));
+        }
 
+        dispatch({ type: 'SELECTED_CONVERSATION_CHANGED', conversationId });
+        dispatch({ type: 'MESSAGES_LOADED', conversationId, messages });
+    };
+
+    const generateMessagesForConversation = (conversation) => {
+        const messages = [];
         for (let i = 0; i < 10; i++) {
-
-            const recipientName = person2Name;
-
-            const messageText = `${faker.lorem.sentence()} ${faker.lorem.sentence()}`;
             const message = {
-                imageUrl: selectedConversation.imageUrl,
-                imageAlt: recipientName,
-                messageText: messageText,
+                imageUrl: conversation.imageUrl,
+                imageAlt: conversation.title,
+                messageText: `${faker.lorem.sentence()} ${faker.lorem.sentence()}`,
                 createdAt: faker.date.recent().toLocaleString(),
                 isMyMessage: i % 2 === 0,
             };
-
-            conversation.push(message);
+            messages.push(message);
         }
-
-        return conversation;
+        return messages;
     };
 
     return (
