@@ -17,38 +17,48 @@ const ChatShell = () => {
             (conversation) => conversation.id === conversationId
         );
 
-        let messages = JSON.parse(
-            localStorage.getItem(`messages_${conversationId}`)
-        );
-
-        if (!messages) {
-            // Generate messages if they are not found in local storage
-            messages = generateMessagesForConversation(selectedConversation);
-            localStorage.setItem(`messages_${conversationId}`, JSON.stringify(messages));
-        }
-
         dispatch({ type: 'SELECTED_CONVERSATION_CHANGED', conversationId });
-        dispatch({ type: 'MESSAGES_LOADED', conversationId, messages });
-    };
+        };
 
-    const generateMessagesForConversation = (conversation) => {
-        const messages = [];
-        for (let i = 0; i < 10; i++) {
-            const message = {
-                imageUrl: conversation.imageUrl,
-                imageAlt: conversation.title,
-                messageText: `${faker.lorem.sentence()} ${faker.lorem.sentence()}`,
-                createdAt: faker.date.recent().toLocaleString(),
-                isMyMessage: i % 2 === 0,
+    const handleSendMessage = (text) => {
+        if (!state.selectedConversation) return;
+
+        const userMessage = {
+            imageUrl: '', 
+            imageAlt: 'You',
+            messageText: text, //the text passed to the function
+            createdAt: new Date().toLocaleString(),
+            isMyMessage: true,
+        };
+
+        // Add user message
+        dispatch({
+            type: 'ADD_MESSAGE',
+            conversationId: state.selectedConversation.id,
+            message: userMessage,
+        });
+
+        // Generate recipient's reply
+        setTimeout(() => {
+            const recipientMessage = {
+                imageUrl: state.selectedConversation.imageUrl,
+                imageAlt: state.selectedConversation.title,
+                messageText: faker.lorem.sentence(),
+                createdAt: new Date().toLocaleString(),
+                isMyMessage: false,
             };
-            messages.push(message);
-        }
-        return messages;
+
+            dispatch({
+                type: 'ADD_MESSAGE',
+                conversationId: state.selectedConversation.id,
+                message: recipientMessage,
+            });
+        }, 1000); 
     };
 
     return (
         <div
-            className="grid grid-rows-[71px_1fr_78px] grid-cols-[275px_1fr] h-screen bg-white overflow-y-auto"
+            className="grid grid-rows-[70px_1fr_78px] grid-cols-[275px_1fr] h-screen bg-white overflow-y-auto"
             style={{
                 gridTemplateAreas: `
                     'search-container chat-title'
@@ -82,7 +92,7 @@ const ChatShell = () => {
             </div>
 
             <div className="row-start-3 col-start-2 area-[chat-form]">
-                <ChatForm />
+                <ChatForm handleSendMessage={handleSendMessage} />
             </div>
         </div>
     );
