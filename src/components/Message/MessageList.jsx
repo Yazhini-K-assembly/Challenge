@@ -1,9 +1,15 @@
 import React from 'react';
 import Message from './Message';
 
-const MessageList = ({ messages }) => {
+const MessageList = ({ messages, onEditMessage, onDeleteMessage }) => {
     const messageItems = messages.map((message, index) => (
-        <Message key={index} isMyMessage={message.isMyMessage} message={message} />
+        <Message
+            key={index}
+            isMyMessage={message.isMyMessage}
+            message={message}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
+        />
     ));
 
     return (

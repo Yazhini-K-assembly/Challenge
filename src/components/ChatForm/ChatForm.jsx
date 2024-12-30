@@ -1,33 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function ChatForm({ handleSendMessage }) {
-    const [messageText, setMessageText] = useState('');
+const ChatForm = ({ handleSendMessage, initialText }) => {
+    const [text, setText] = useState(initialText);
 
-    const sendMessage = () => {
-        if (messageText.trim()) {
-            handleSendMessage(messageText.trim());
-            setMessageText('');
-        }
+    useEffect(() => {
+        setText(initialText);
+    }, [initialText]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!text.trim()) return; // Prevent empty messages
+        handleSendMessage(text);
+        setText(''); // Clear input after sending
     };
 
     return (
-        <div className="grid grid-cols-[1fr_auto] items-center gap-4 bg-gray-200 border-t border-gray-300 px-10 py-3 ">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2">
             <input
                 type="text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
                 placeholder="Type a message"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                className="outline-none p-3 border-2 border-gray-300 text-gray-800 rounded-lg text-md w-full"
+                className="flex-grow p-2 border rounded"
             />
-            <button
-                onClick={sendMessage}
-                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
+            <button type="submit" className="p-2 bg-blue-500 text-white rounded">
                 Send
             </button>
-        </div>
+        </form>
     );
-}
+};
 
 export default ChatForm;

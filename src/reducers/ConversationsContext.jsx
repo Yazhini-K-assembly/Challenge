@@ -1,18 +1,27 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import { faker } from '@faker-js/faker';
 
-// Callback to initialize state
+const initializeConversations = () => {
+    console.log('Generating new conversations data using faker-js...');
+    return [];
+};
+
 const initialStateCallback = () => {
     console.log('Checking for existing conversations data in local storage...');
     const savedState = localStorage.getItem('conversationsState');
 
     if (savedState) {
         console.log('Restoring conversations data...');
-        return JSON.parse(savedState);
+        const parsedState = JSON.parse(savedState);
+        return {
+            ...parsedState,
+            filteredConversations: parsedState.conversations, 
+        };
     } else {
         console.log('No data found in local storage.');
         return {
-            conversations: [],  //Initializes an empty list of conversations.
+            conversations: initializeConversations(),
+            filteredConversations: initializeConversations(),
             selectedConversation: null,
         };
     }
@@ -39,6 +48,7 @@ export const conversationsReducer = (state, action) => {
             return {
                 ...state,
                 conversations: updatedConversations,
+                filteredConversations: updatedConversations,
             };
         }
 
@@ -73,6 +83,7 @@ export const conversationsReducer = (state, action) => {
             return {
                 ...state,
                 conversations: updatedConversations,
+                filteredConversations: updatedConversations,
                 selectedConversation: updatedConversations.find(
                     (conversation) => conversation.id === state.selectedConversation.id
                 ),
@@ -94,9 +105,63 @@ export const conversationsReducer = (state, action) => {
             return {
                 ...state,
                 conversations: updatedConversations,
+                filteredConversations: updatedConversations,
                 selectedConversation: updatedSelectedConversation,
             };
         }
+
+        case 'SEARCH_CONVERSATION': {
+            const searchTerm = action.searchTerm.toLowerCase();
+            const filteredConversations = state.conversations.filter((conversation) =>
+                conversation.title.toLowerCase().includes(searchTerm)
+            );
+        
+            return {
+                ...state,
+                filteredConversations,
+            };
+        }        
+
+        case 'EDIT_MESSAGE': {
+            const { conversationId, message } = action;
+        
+            const updatedConversations = state.conversations.map((conversation) => {
+                if (conversation.id === conversationId) {
+                    const updatedMessages = conversation.messages.map((msg) =>
+                        msg.id === message.id ? message : msg
+                    );
+        
+                    localStorage.setItem(`messages_${conversationId}`, JSON.stringify(updatedMessages));
+        
+                    return {
+                        ...conversation,
+                        messages: updatedMessages,
+                    };
+                }
+                return conversation;
+            });
+        
+            return {
+                ...state,
+                conversations: updatedConversations,
+                filteredConversations: updatedConversations,
+                selectedConversation: updatedConversations.find(
+                    (conversation) => conversation.id === state.selectedConversation.id
+                ),
+            };
+        }        
+        
+        case 'DELETE_MESSAGE':
+    return {
+        ...state,
+        selectedConversation: {
+            ...state.selectedConversation,
+            messages: state.selectedConversation.messages.filter(
+                (message) => message.id !== action.messageId  // Filter out the deleted message
+            ),
+        },
+    };
+  
 
         default:
             console.warn(`Unhandled action type: ${action.type}`);

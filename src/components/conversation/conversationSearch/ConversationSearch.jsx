@@ -9,7 +9,6 @@ function ConversationSearch() {
         const term = event.target.value.toLowerCase();
         setSearchTerm(term);
 
-        // Dispatch the search term to the context
         dispatch({ type: 'SEARCH_CONVERSATION', searchTerm: term });
     };
 
